@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Blog WordPress</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="componentes/components.js"></script>
+</head>
+<body>
+  <header-component></header-component>
+  
+  <div id="inicio"></div>
+  <div class="main-content">
+    <h1>Blog WordPress</h1>
+    
+    <!-- Selector de categorías -->
+    <div class="categorias-container">
+      <select id="categoria-selector" onchange="filtrarPorCategoria(this.value)">
+        <option value="">Todas las categorías</option>
+      </select>
+    </div>
+
+    <div id="posts"></div>
+    <div class="paginacion">
+      <button id="anterior" onclick="cambiarPagina('anterior')" disabled>Anterior</button>
+      <span id="info-pagina">Página 1</span>
+      <button id="siguiente" onclick="cambiarPagina('siguiente')">Siguiente</button>
+    </div>
+  </div>
+
+  <footer-component></footer-component>
+
+  <script>
+    const WP_URL = 'https://dev-webgae.pantheonsite.io/wp-json/wp/v2';
+    const POSTS_POR_PAGINA = 5;
+    
+    let paginaActual = 1;
+    let totalPaginas = 1;
+    let categorias = new Set();
+    let categoriaActual = '';
+    let categoriasMap = new Map();
+
+    function crearSlug(texto) {
+      return texto
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .substring(0, 100);
+    }
+
+    function crearExtracto(contenidoHTML, longitud = 200) {
+      const temp = document.createElement('div');
+      temp.innerHTML = contenidoHTML;
+      const texto = temp.textContent || temp.innerText;
+      return texto.length > longitud ? texto.substring(0, longitud) + '...' : texto;
+    }
+
+    function extraerPrimeraImagen(contenido) {
+      const temp = document.createElement('div');
+      temp.innerHTML = contenido;
+      const primeraImagen = temp.querySelector('img');
+      return primeraImagen ? primeraImagen.src : 'https://via.placeholder.com/150';
+    }
+
+    function scrollToTop() {
+      const inicioElement = document.getElementById('inicio');
+      if (inicioElement) {
+        inicioElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    async function obtenerCategorias() {
+      try {
+        const response = await fetch(`${WP_URL}/categories`);
+        const categorias = await response.json();
+        
+        const selector = document.getElementById('categoria-selector');
+        const todasOption = selector.options[0];
+        selector.innerHTML = '';
+        selector.appendChild(todasOption);
+
+        categorias.sort((a, b) => a.name.localeCompare(b.name));
+
+        categorias.forEach(categoria => {
+          const option = document.createElement('option');
+          option.value = categoria.id;
+          option.textContent = categoria.name;
+          selector.appendChild(option);
+          categoriasMap.set(categoria.id, categoria.name);
+        });
+
+      } catch (error) {
+        console.error("Error al obtener categorías:", error);
+      }
+    }
+
+    async function filtrarPorCategoria(categoriaId) {
+      categoriaActual = categoriaId;
+      paginaActual = 1;
+      await obtenerPosts();
+    }
+
+    function formatearFecha(fecha) {
+      return new Date(fecha).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+
+    async function obtenerPosts() {
+      try {
+        scrollToTop();
+        
+        let url = `${WP_URL}/posts?page=${paginaActual}&per_page=${POSTS_POR_PAGINA}&_embed`;
+        
+        if (categoriaActual) {
+          url += `&categories=${categoriaActual}`;
+        }
+
+        const response = await fetch(url);
+        const totalPosts = response.headers.get('X-WP-Total');
+        totalPaginas = parseInt(response.headers.get('X-WP-TotalPages'));
+        
+        const posts = await response.json();
+        
+        document.getElementById('siguiente').disabled = paginaActual >= totalPaginas;
+        document.getElementById('anterior').disabled = paginaActual === 1;
+        document.getElementById('info-pagina').textContent = `Página ${paginaActual} de ${totalPaginas}`;
+
+        const postsContainer = document.getElementById('posts');
+        postsContainer.innerHTML = '';
+
+        posts.forEach(post => {
+          let imagenUrl = 'https://via.placeholder.com/150';
+          if (post._embedded && post._embedded['wp:featuredmedia']) {
+            imagenUrl = post._embedded['wp:featuredmedia'][0].source_url;
+          } else {
+            imagenUrl = extraerPrimeraImagen(post.content.rendered);
+          }
+
+          const extracto = crearExtracto(post.excerpt.rendered || post.content.rendered);
+          const slug = crearSlug(post.title.rendered);
+          const postUrl = `wp-post.html?slug=${slug}&id=${post.id}`;
+
+          const postCategorias = post._embedded['wp:term'][0] || [];
+          const etiquetas = postCategorias.length > 0 ? `
+            <div class="etiquetas">
+              ${postCategorias.map(cat => `<span class="etiqueta">${cat.name}</span>`).join('')}
+            </div>
+          ` : '';
+
+          const postHTML = `
+            <div class="post">
+              <img src="${imagenUrl}" alt="${post.title.rendered}">
+              <h2><a href="${postUrl}">${post.title.rendered}</a></h2>
+              <p>${extracto}</p>
+              ${etiquetas}
+              <div class="post-meta">Publicado el ${formatearFecha(post.date)}</div>
+              <a href="${postUrl}" class="ver-mas">Ver más</a> 
+            </div>
+          `;
+          postsContainer.innerHTML += postHTML;
+        });
+
+      } catch (error) {
+        console.error("Error al obtener los posts:", error);
+      }
+    }
+
+    async function cambiarPagina(direccion) {
+      if (direccion === 'siguiente' && paginaActual < totalPaginas) {
+        paginaActual++;
+        await obtenerPosts();
+      } else if (direccion === 'anterior' && paginaActual > 1) {
+        paginaActual--;
+        await obtenerPosts();
+      }
+    }
+
+    async function inicializar() {
+      await obtenerCategorias();
+      await obtenerPosts();
+    }
+
+    inicializar();
+  </script>
+</body>
+</html>

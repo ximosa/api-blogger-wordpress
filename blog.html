@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Blog</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="componentes/components.js"></script>
+</head>
+<body>
+  <header-component></header-component>
+  
+  <div id="inicio"></div>
+  <div class="main-content">
+    <h1>Blog</h1>
+    <div id="posts"></div>
+    <div class="paginacion">
+      <button id="anterior" onclick="cambiarPagina('anterior')" disabled>Anterior</button>
+      <span id="info-pagina">Página 1</span>
+      <button id="siguiente" onclick="cambiarPagina('siguiente')">Siguiente</button>
+    </div>
+  </div>
+
+  <footer-component></footer-component>
+
+  <script>
+    const API_KEY = 'AIzaSyBFBbH1SQkSZf1LJzammWAe2karh5mG9rQ';
+    const BLOG_ID = '2756493429384988662';
+    const POSTS_POR_PAGINA = 5;
+    
+    let paginaActual = 1;
+    let tokenSiguiente = '';
+    let tokenAnterior = [];
+
+    function crearSlug(texto) {
+      return texto
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .substring(0, 100);
+    }
+
+    function crearExtracto(contenidoHTML, longitud = 200) {
+      const temp = document.createElement('div');
+      temp.innerHTML = contenidoHTML;
+      const texto = temp.textContent || temp.innerText;
+      return texto.length > longitud ? texto.substring(0, longitud) + '...' : texto;
+    }
+
+    function scrollToTop() {
+      const inicioElement = document.getElementById('inicio');
+      if (inicioElement) {
+        inicioElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    async function obtenerPosts(pageToken = '') {
+      try {
+        scrollToTop();
+        
+        const url = `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${API_KEY}&maxResults=${POSTS_POR_PAGINA}${pageToken ? '&pageToken=' + pageToken : ''}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        const posts = data.items || [];
+        
+        tokenSiguiente = data.nextPageToken || '';
+        
+        document.getElementById('siguiente').disabled = !tokenSiguiente;
+        document.getElementById('anterior').disabled = paginaActual === 1;
+        document.getElementById('info-pagina').textContent = `Página ${paginaActual}`;
+
+        const postsContainer = document.getElementById('posts');
+        postsContainer.innerHTML = '';
+
+        posts.forEach(post => {
+          let imagenUrl = 'https://via.placeholder.com/150';
+          if (post.content) {
+            const imgMatch = post.content.match(/<img.+?src="(.*?)"/);
+            if (imgMatch) {
+              imagenUrl = imgMatch[1];
+            }
+          }
+
+          const extracto = crearExtracto(post.content);
+          const slug = crearSlug(post.title);
+          const postUrl = `post.html?slug=${slug}&id=${post.id}`;
+
+          const postHTML = `
+            <div class="post">
+              <img src="${imagenUrl}" alt="${post.title}">
+              <h2><a href="${postUrl}">${post.title}</a></h2>
+              <p>${extracto}</p>
+              <a href="${postUrl}" class="ver-mas">Ver más</a> 
+            </div>
+          `;
+          postsContainer.innerHTML += postHTML;
+        });
+
+      } catch (error) {
+        console.error("Error al obtener los posts:", error);
+      }
+    }
+
+    async function cambiarPagina(direccion) {
+      if (direccion === 'siguiente' && tokenSiguiente) {
+        tokenAnterior.push(tokenSiguiente);
+        paginaActual++;
+        await obtenerPosts(tokenSiguiente);
+      } else if (direccion === 'anterior' && paginaActual > 1) {
+        paginaActual--;
+        tokenAnterior.pop();
+        const tokenPaginaAnterior = tokenAnterior[tokenAnterior.length - 1] || '';
+        await obtenerPosts(tokenPaginaAnterior);
+      }
+    }
+
+    // Cargar primera página
+    obtenerPosts();
+  </script>
+</body>
+</html>

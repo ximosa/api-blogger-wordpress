@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Post WordPress</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="componentes/components.js"></script>
+</head>
+<body>
+  <header-component></header-component>
+
+  <main class="main-content">
+    <div class="post">
+      <a href="wp-blog.html" class="volver-btn">Volver al Blog</a>
+      <h1 id="post-title"></h1>
+      <div class="post-meta" id="post-meta"></div>
+      <div id="post-categories" class="etiquetas"></div>
+      <div class="post-content" id="post-content"></div>
+    </div>
+  </main>
+
+  <footer-component></footer-component>
+
+  <script>
+    const WP_URL = 'https://dev-webgae.pantheonsite.io/wp-json/wp/v2';
+
+    function obtenerParametroURL(nombre) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(nombre);
+    }
+
+    function formatearFecha(fecha) {
+      return new Date(fecha).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function crearSlug(texto) {
+      return texto
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .substring(0, 100);
+    }
+
+    function mostrarError(mensaje) {
+      document.querySelector('main').innerHTML = `
+        <div class="error-container">
+          <h1>${mensaje}</h1>
+          <p>No se pudo cargar el contenido del post.</p>
+          <a href="wp-blog.html" class="volver-btn">Volver al Blog</a>
+        </div>
+      `;
+    }
+
+    async function obtenerPost() {
+      const postId = obtenerParametroURL('id');
+      const slug = obtenerParametroURL('slug');
+      
+      if (!postId) {
+        mostrarError('Post no encontrado');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${WP_URL}/posts/${postId}?_embed`);
+        
+        if (!response.ok) {
+          throw new Error('Post no encontrado');
+        }
+        
+        const post = await response.json();
+        
+        // Actualizar el título de la página
+        document.title = post.title.rendered;
+        
+        // Actualizar el contenido
+        document.getElementById('post-title').innerHTML = post.title.rendered;
+        document.getElementById('post-meta').textContent = `Publicado el ${formatearFecha(post.date)}`;
+        
+        // Mostrar categorías si existen
+        if (post._embedded && post._embedded['wp:term']) {
+          const categorias = post._embedded['wp:term'][0] || [];
+          const categoriasHTML = categorias.map(cat => 
+            `<span class="etiqueta">${cat.name}</span>`
+          ).join('');
+          document.getElementById('post-categories').innerHTML = categoriasHTML;
+        }
+
+        // Procesar el contenido
+        let contenido = post.content.rendered;
+
+        // Si hay imagen destacada, mostrarla al principio del contenido
+        if (post._embedded && post._embedded['wp:featuredmedia']) {
+          const imagenDestacada = post._embedded['wp:featuredmedia'][0];
+          const imagenHTML = `
+            <img 
+              src="${imagenDestacada.source_url}" 
+              alt="${imagenDestacada.alt_text || post.title.rendered}"
+              class="featured-image"
+            >
+          `;
+          contenido = imagenHTML + contenido;
+        }
+
+        document.getElementById('post-content').innerHTML = contenido;
+
+        // Aplicar estilos a las imágenes
+        const imagenes = document.querySelectorAll('.post-content img, .featured-image');
+        imagenes.forEach(img => {
+          img.style.maxWidth = '100%';
+          img.style.height = 'auto';
+          img.style.display = 'block';
+          img.style.margin = '20px auto';
+          img.style.borderRadius = '8px';
+        });
+
+        // Aplicar estilos a los iframes (videos embebidos)
+        const iframes = document.querySelectorAll('.post-content iframe');
+        iframes.forEach(iframe => {
+          iframe.style.maxWidth = '100%';
+          iframe.style.margin = '20px auto';
+          iframe.style.display = 'block';
+          iframe.style.borderRadius = '8px';
+        });
+
+        // Mejorar la visualización de bloques de código
+        const bloquesCodigo = document.querySelectorAll('.post-content pre, .post-content code');
+        bloquesCodigo.forEach(bloque => {
+          bloque.style.backgroundColor = '#f5f5f5';
+          bloque.style.padding = '15px';
+          bloque.style.borderRadius = '5px';
+          bloque.style.overflow = 'auto';
+          bloque.style.fontSize = '14px';
+          bloque.style.lineHeight = '1.5';
+          bloque.style.fontFamily = 'Consolas, Monaco, monospace';
+        });
+
+        // Actualizar URL si es necesario
+        const slugEsperado = crearSlug(post.title.rendered);
+        if (slug !== slugEsperado) {
+          const nuevaURL = `wp-post.html?slug=${slugEsperado}&id=${postId}`;
+          window.history.replaceState({}, post.title.rendered, nuevaURL);
+        }
+
+      } catch (error) {
+        console.error('Error al obtener el post:', error);
+        mostrarError('Error al cargar el post');
+      }
+    }
+
+    // Cargar el post
+    obtenerPost();
+  </script>
+</body>
+</html>

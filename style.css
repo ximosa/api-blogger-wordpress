@@ -1,0 +1,308 @@
+/* Estilos para la página de blog */
+html {
+  scroll-behavior: smooth; /* Para desplazamiento suave */
+}
+body {
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
+    background-color: #f8f8f8;
+    margin: 0 auto;
+    max-width: 960px;
+    padding: 2rem;
+}
+
+/* Estilos para párrafos */
+p {
+  margin-bottom: 1.5rem;
+}
+
+/* Estilos para encabezados */
+h1, h2, h3 {
+  font-family: 'Montserrat', sans-serif;
+  margin-bottom: 1rem;
+}
+.main-content {
+  margin-top: 80px;
+  padding: 2rem;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.api-section {
+  background: white;
+  border-radius: 10px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.api-section h2 {
+  color: #021603;
+  margin-bottom: 1rem;
+}
+
+.api-section p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.features-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.features-list li {
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.features-list li::before {
+  content: "•";
+  color: #4CAF50;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+.cta-button {
+  display: inline-block;
+  background-color: #021603;
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 5px;
+  text-decoration: none;
+  margin-top: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+  background-color: #363836;
+}
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  .nav-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #021603;
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .nav-menu.active {
+    display: flex;
+  }
+
+  .nav-menu a {
+    padding: 0.5rem 0;
+    display: block;
+  }
+
+  .api-section {
+    padding: 1.5rem;
+  }
+}
+/* Estilos para el selector de categorías */
+.categorias-container {
+  margin: 20px 0;
+  text-align: center;
+}
+
+#categoria-selector {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: 2px solid #021603;
+  border-radius: 5px;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  min-width: 200px;
+}
+
+#categoria-selector:hover {
+  border-color: #363836;
+}
+
+#categoria-selector:focus {
+  outline: none;
+  border-color: #021603;
+  box-shadow: 0 0 5px rgba(2, 22, 3, 0.2);
+}
+
+/* Estilos para las etiquetas */
+.etiquetas {
+  margin: 10px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.etiqueta {
+  background-color: #e8f5e9;
+  color: #021603;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 14px;
+  display: inline-block;
+  border: 1px solid #021603;
+}
+
+.post {
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.post img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px 10px 0 0;
+  float: left;
+  margin-right: 15px;
+}
+
+.post h2 {
+  font-size: 24px;
+  margin-top: 0;
+}
+
+.post h2 a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.post p {
+  font-size: 18px;
+  color: #666;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.ver-mas {
+  display: inline-block;
+  background-color: #021603;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  margin-top: 10px;
+}
+
+.ver-mas:hover {
+  background-color: #363836;
+}
+
+/* Estilos para la paginación */
+.paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 10px;
+  padding-bottom: 30px;
+}
+
+.paginacion button {
+  padding: 8px 15px;
+  background-color: #081a08;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.paginacion button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.paginacion span {
+  font-size: 16px;
+  color: #666;
+}
+
+/* Estilos para la página de post */
+.post {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.post h1 {
+    font-size: 36px;
+    margin-top: 0;
+    color: #333;
+}
+
+.post-content {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #444;
+}
+
+.post-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.volver-btn {
+    display: inline-block;
+    background-color: #111611;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.volver-btn:hover {
+    background-color: #353835;
+}
+
+.post-meta {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.error-container {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+code {
+    display: block;
+    margin: 2rem auto;
+    padding: 1rem;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-x: auto;
+}
