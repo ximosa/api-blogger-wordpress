@@ -96,9 +96,9 @@ class HeaderComponent extends HTMLElement {
                     <a href="/index.html" class="logo">Webgae</a>
                     <button class="menu-toggle">☰</button>
                     <ul class="nav-menu" id="nav-menu">
-                        <li><a href="/index.html">Inicio</a></li>
-                        <li><a href="/blog.html">Blog (Blogger)</a></li>
-                        <li><a href="/wp-blog.html">Blog (WordPress)</a></li>
+                        <li><a href="./index.html">Inicio</a></li>
+                        <li><a href="./blog.html">Blog (Blogger)</a></li>
+                        <li><a href="./wp-blog.html">Blog (WordPress)</a></li>
                     </ul>
                 </div>
             </nav>
