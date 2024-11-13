@@ -50,8 +50,6 @@ Una plantilla moderna y lista para usar que demuestra la integración de APIs de
 ├── style.css              # Estilos globales
 ├── componentes/
 │   ├── components.js      # Componentes web (header y footer)
-│   ├── header.html        # Plantilla del header
-│   └── footer.html        # Plantilla del footer
 └── README.md              # Documentación
 ```
 
