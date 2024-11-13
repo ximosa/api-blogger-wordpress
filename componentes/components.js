@@ -93,7 +93,7 @@ class HeaderComponent extends HTMLElement {
             </style>
             <nav class="navbar">
                 <div class="nav-container">
-                    <a href="/index.html" class="logo">Webgae</a>
+                    <a href="./index.html" class="logo">Webgae</a>
                     <button class="menu-toggle">☰</button>
                     <ul class="nav-menu" id="nav-menu">
                         <li><a href="./index.html">Inicio</a></li>
